@@ -33,15 +33,15 @@ The goal is simple: keep useful operational scripts documented, portable, and ea
 
 ## Script Index
 
-| Script | Purpose | Best for |
-|---|---|---|
-| [`bootstrap-cliproxyapi.sh`](bootstrap-cliproxyapi.sh) | Bootstrap CLIProxyAPI, generate API keys, open firewall, start service | OpenCode/OpenAI-compatible proxy on VPS |
-| [`install-sub2api.sh`](install-sub2api.sh) | Deploy Sub2API with Docker and UFW rules | Fast subscription API deployment |
-| [`setup-terminal.sh`](setup-terminal.sh) | Install Zsh, Oh My Zsh, plugins, optional code-server, UFW | Fresh Linux/VPS terminal setup |
-| [`wsl2-clash-proxy.sh`](wsl2-clash-proxy.sh) | Start, stop, and check Clash proxy variables inside WSL2 | WSL2 proxy workflow |
-| [`url-fetcher.sh`](url-fetcher.sh) | Collect historical URLs using `waybackurls` and `gau` | Bug bounty endpoint discovery |
-| [`send-to-chat.sh`](send-to-chat.sh) | Send result files to Telegram or Discord | Recon/result notification |
-| [`wsl2-storage-maintenance.md`](wsl2-storage-maintenance.md) | Clean, compact, and rebuild WSL2 VHDX disks | Windows 11 Home WSL maintenance |
+| No. | Script | One-liner use case | Best for |
+|---:|---|---|---|
+| 01 | [`bootstrap-cliproxyapi.sh`](bootstrap-cliproxyapi.sh) | Install/start CLIProxyAPI on a VPS | OpenCode/OpenAI-compatible proxy |
+| 02 | [`install-sub2api.sh`](install-sub2api.sh) | Deploy Sub2API with Docker | Fast subscription API deployment |
+| 03 | [`setup-terminal.sh`](setup-terminal.sh) | Prepare a fresh Linux terminal | Zsh, plugins, code-server, UFW |
+| 04 | [`wsl2-clash-proxy.sh`](wsl2-clash-proxy.sh) | Toggle Clash proxy inside WSL2 | WSL2 proxy workflow |
+| 05 | [`url-fetcher.sh`](url-fetcher.sh) | Pull URLs from `waybackurls` and `gau` | Bug bounty endpoint discovery |
+| 06 | [`send-to-chat.sh`](send-to-chat.sh) | Send a file to Telegram/Discord | Recon/result notification |
+| 07 | [`wsl2-storage-maintenance.md`](wsl2-storage-maintenance.md) | Follow WSL2 disk cleanup steps | Windows 11 Home VHDX maintenance |
 
 ## Quick Clone
 
@@ -67,7 +67,7 @@ cd scripts-lab
 
 ## Script Guides
 
-### bootstrap-cliproxyapi.sh
+### 01. bootstrap-cliproxyapi.sh
 
 <p>
   <img src="https://img.shields.io/badge/CLIProxyAPI-bootstrap-111827?style=flat-square" alt="CLIProxyAPI bootstrap">
@@ -78,6 +78,12 @@ cd scripts-lab
 One-shot CLIProxyAPI bootstrap for a clean VPS.
 
 It downloads CLIProxyAPI config/compose files if missing, generates fresh API keys, enables remote access when requested, opens the API port, starts the container, and prints connection details for OpenCode or another OpenAI-compatible client.
+
+**One-liner**
+
+```bash
+mkdir -p /root/cliproxyapi && curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/bootstrap-cliproxyapi.sh -o /root/cliproxyapi/bootstrap-cliproxyapi.sh && chmod +x /root/cliproxyapi/bootstrap-cliproxyapi.sh && /root/cliproxyapi/bootstrap-cliproxyapi.sh
+```
 
 **What it does**
 
@@ -143,7 +149,7 @@ Use the management key only for the management page.
 
 ---
 
-### install-sub2api.sh
+### 02. install-sub2api.sh
 
 <p>
   <img src="https://img.shields.io/badge/Sub2API-deploy-2563EB?style=flat-square" alt="Sub2API deploy">
@@ -152,6 +158,12 @@ Use the management key only for the management page.
 </p>
 
 VPS helper for deploying Sub2API with Docker.
+
+**One-liner**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/install-sub2api.sh -o /tmp/install-sub2api.sh && chmod +x /tmp/install-sub2api.sh && /tmp/install-sub2api.sh
+```
 
 **What it does**
 
@@ -186,7 +198,7 @@ http://YOUR_VPS_IP:8080
 
 ---
 
-### setup-terminal.sh
+### 03. setup-terminal.sh
 
 <p>
   <img src="https://img.shields.io/badge/terminal-setup-111827?style=flat-square" alt="Terminal setup">
@@ -195,6 +207,12 @@ http://YOUR_VPS_IP:8080
 </p>
 
 Root terminal setup for fresh Linux machines.
+
+**One-liner**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/setup-terminal.sh -o /tmp/setup-terminal.sh && chmod +x /tmp/setup-terminal.sh && sudo /tmp/setup-terminal.sh
+```
 
 **What it does**
 
@@ -224,7 +242,7 @@ sudo ./setup-terminal.sh
 
 ---
 
-### wsl2-clash-proxy.sh
+### 04. wsl2-clash-proxy.sh
 
 <p>
   <img src="https://img.shields.io/badge/WSL2-proxy-0078D4?style=flat-square&logo=windows&logoColor=white" alt="WSL2 proxy">
@@ -233,6 +251,14 @@ sudo ./setup-terminal.sh
 </p>
 
 WSL2 helper for managing Clash proxy environment variables.
+
+**One-liner**
+
+```bash
+source <(curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/wsl2-clash-proxy.sh) start
+```
+
+Use `stop` or `check` instead of `start` when needed.
 
 **What it does**
 
@@ -258,7 +284,7 @@ chmod +x wsl2-clash-proxy.sh
 
 ---
 
-### url-fetcher.sh
+### 05. url-fetcher.sh
 
 <p>
   <img src="https://img.shields.io/badge/bug_bounty-URL_collection-DC2626?style=flat-square" alt="Bug bounty URL collection">
@@ -267,6 +293,12 @@ chmod +x wsl2-clash-proxy.sh
 </p>
 
 Bug bounty URL collection helper.
+
+**One-liner**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/url-fetcher.sh -o /tmp/url-fetcher.sh && chmod +x /tmp/url-fetcher.sh && /tmp/url-fetcher.sh domains.txt
+```
 
 **What it does**
 
@@ -305,7 +337,7 @@ fetchedurls.txt
 
 ---
 
-### send-to-chat.sh
+### 06. send-to-chat.sh
 
 <p>
   <img src="https://img.shields.io/badge/Telegram-send_file-26A5E4?style=flat-square&logo=telegram&logoColor=white" alt="Telegram">
@@ -314,6 +346,12 @@ fetchedurls.txt
 </p>
 
 Send a file to Telegram or Discord using a ProjectDiscovery `notify`-style provider config.
+
+**One-liner**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/send-to-chat.sh -o /tmp/send-to-chat.sh && chmod +x /tmp/send-to-chat.sh && /tmp/send-to-chat.sh fetchedurls.txt
+```
 
 **What it does**
 
@@ -339,7 +377,7 @@ The config should contain Telegram or Discord provider credentials compatible wi
 
 ---
 
-### wsl2-storage-maintenance.md
+### 07. wsl2-storage-maintenance.md
 
 <p>
   <img src="https://img.shields.io/badge/WSL2-storage-0078D4?style=flat-square&logo=windows&logoColor=white" alt="WSL2 storage">
@@ -348,6 +386,12 @@ The config should contain Telegram or Discord provider credentials compatible wi
 </p>
 
 Checklist for reducing WSL2 disk bloat on Windows 11 Home.
+
+**One-liner**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/wsl2-storage-maintenance.md -o wsl2-storage-maintenance.md && less wsl2-storage-maintenance.md
+```
 
 **What it covers**
 
