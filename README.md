@@ -17,6 +17,8 @@ Collection of utility scripts for system setup, proxy management, bug bounty wor
 
 Use this on the VPS as `root`. Downloading the script avoids shell paste/heredoc corruption.
 
+Every run generates fresh random client API keys and a fresh management key, then replaces the old values in `config.yaml`. Save the printed keys after each run.
+
 ```bash
 mkdir -p /root/cliproxyapi
 curl -fsSL https://raw.githubusercontent.com/4riful/scripts-lab/main/bootstrap-cliproxyapi.sh \

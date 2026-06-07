@@ -175,6 +175,7 @@ restart_service || true
 echo
 echo "Updated:       $CONFIG"
 echo "Backup:        $BACKUP"
+echo "Key rotation:  generated fresh client keys and management key for this run"
 echo "VPS IP:        $PUBLIC_IP"
 echo "API URL:       http://$PUBLIC_IP:$PORT"
 echo "Management UI: http://$PUBLIC_IP:$PORT/management.html"
