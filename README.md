@@ -10,12 +10,14 @@ Collection of utility scripts for system setup, proxy management, bug bounty wor
 | [`wsl2-clash-proxy.sh`](wsl2-clash-proxy.sh) | Manage Clash proxy on WSL2 — detects WSL2 IP and starts/stops/checks proxy via `http_proxy`/`https_proxy` environment variables |
 | [`url-fetcher.sh`](url-fetcher.sh) | Bug bounty URL gathering tool — uses `waybackurls` and `gau` to collect endpoints from a domain list, sorts unique results to `fetchedurls.txt` |
 | [`send-to-chat.sh`](send-to-chat.sh) | Send files or results to Discord or Telegram using the `notify` provider config (`~/.config/notify/provider-config.yaml`) |
-| [`bootstrap-cliproxyapi.sh`](bootstrap-cliproxyapi.sh) | Root-only CLIProxyAPI bootstrap for VPS use — opens port `8317/tcp`, generates client API keys, sets the management key, binds the proxy, restarts the service, and prints the OpenCode-ready URL |
+| [`bootstrap-cliproxyapi.sh`](bootstrap-cliproxyapi.sh) | Root-only CLIProxyAPI bootstrap for VPS use — downloads CLIProxyAPI files if missing, opens port `8317/tcp`, generates client API keys, sets the management key, binds the proxy, starts/restarts the service, and prints the OpenCode-ready URL |
 | [`wsl2-storage-maintenance.md`](wsl2-storage-maintenance.md) | Guide for cleaning and compacting WSL2 VHDX disks on Windows 11 Home — includes cleanup steps, diskpart compaction, and full export/import rebuild |
 
 ## CLIProxyAPI VPS bootstrap
 
 Use this on the VPS as `root`. Downloading the script avoids shell paste/heredoc corruption.
+
+If CLIProxyAPI is not installed yet, the script downloads the official `config.example.yaml` and `docker-compose.yml` into `/root/cliproxyapi`, configures them, and starts the service with Docker Compose.
 
 Every run generates fresh random client API keys and a fresh management key, then replaces the old values in `config.yaml`. Save the printed keys after each run.
 
@@ -35,6 +37,8 @@ SERVICE=cliproxyapi \
 PORT=8317 \
 API_KEY_COUNT=3 \
 EXPOSE_PUBLIC=yes \
+INSTALL_IF_MISSING=yes \
+INSTALL_DIR=/root/cliproxyapi \
 /root/cliproxyapi/bootstrap-cliproxyapi.sh
 ```
 

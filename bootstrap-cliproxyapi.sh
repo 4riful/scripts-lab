@@ -6,6 +6,10 @@ SERVICE="${SERVICE:-cliproxyapi}"
 PORT="${PORT:-8317}"
 API_KEY_COUNT="${API_KEY_COUNT:-3}"
 EXPOSE_PUBLIC="${EXPOSE_PUBLIC:-yes}"
+INSTALL_IF_MISSING="${INSTALL_IF_MISSING:-yes}"
+INSTALL_DIR="${INSTALL_DIR:-/root/cliproxyapi}"
+COMPOSE_FILE="${COMPOSE_FILE:-}"
+UPSTREAM_RAW="${UPSTREAM_RAW:-https://raw.githubusercontent.com/router-for-me/CLIProxyAPI/main}"
 
 find_config() {
   local candidate=""
@@ -40,6 +44,77 @@ find_config() {
   return 1
 }
 
+install_cli_proxy_api_files() {
+  case "${INSTALL_IF_MISSING,,}" in
+    y|yes|true|1) ;;
+    *) return 1 ;;
+  esac
+
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl is required to download CLIProxyAPI files."
+    return 1
+  fi
+
+  echo "CLIProxyAPI config not found. Downloading CLIProxyAPI files into $INSTALL_DIR ..."
+  mkdir -p "$INSTALL_DIR/auths" "$INSTALL_DIR/logs"
+
+  if [[ ! -f "$INSTALL_DIR/config.yaml" ]]; then
+    curl -fsSL "$UPSTREAM_RAW/config.example.yaml" -o "$INSTALL_DIR/config.yaml"
+  fi
+
+  if [[ ! -f "$INSTALL_DIR/docker-compose.yml" ]]; then
+    curl -fsSL "$UPSTREAM_RAW/docker-compose.yml" -o "$INSTALL_DIR/docker-compose.yml"
+  fi
+
+  CONFIG="$INSTALL_DIR/config.yaml"
+  COMPOSE_FILE="$INSTALL_DIR/docker-compose.yml"
+  echo "Downloaded config: $CONFIG"
+  echo "Downloaded compose: $COMPOSE_FILE"
+}
+
+install_docker_if_needed() {
+  if command -v docker >/dev/null 2>&1 && { docker compose version >/dev/null 2>&1 || command -v docker-compose >/dev/null 2>&1; }; then
+    systemctl enable --now docker >/dev/null 2>&1 || true
+    return 0
+  fi
+
+  if ! command -v apt-get >/dev/null 2>&1; then
+    echo "Docker Compose is not installed. Install Docker manually, then run this script again."
+    return 1
+  fi
+
+  echo "Docker Compose not found. Installing Docker from the distribution repositories ..."
+  apt-get update
+  apt-get install -y docker.io
+  apt-get install -y docker-compose-plugin \
+    || apt-get install -y docker-compose-v2 \
+    || apt-get install -y docker-compose \
+    || true
+  systemctl enable --now docker >/dev/null 2>&1 || true
+
+  if docker compose version >/dev/null 2>&1 || command -v docker-compose >/dev/null 2>&1; then
+    return 0
+  fi
+
+  echo "Docker installed, but Docker Compose is still unavailable. Install Docker Compose manually, then run this script again."
+  return 1
+}
+
+compose_up() {
+  if docker compose version >/dev/null 2>&1; then
+    CLI_PROXY_CONFIG_PATH="$CONFIG" \
+    CLI_PROXY_AUTH_PATH="$(dirname "$CONFIG")/auths" \
+    CLI_PROXY_LOG_PATH="$(dirname "$CONFIG")/logs" \
+      docker compose -f "$COMPOSE_FILE" up -d
+    return 0
+  fi
+
+  CLI_PROXY_CONFIG_PATH="$CONFIG" \
+  CLI_PROXY_AUTH_PATH="$(dirname "$CONFIG")/auths" \
+  CLI_PROXY_LOG_PATH="$(dirname "$CONFIG")/logs" \
+    docker-compose -f "$COMPOSE_FILE" up -d
+}
+
 if [[ "${EUID}" -ne 0 ]]; then
   echo "Run this as root."
   exit 1
@@ -47,6 +122,10 @@ fi
 
 if [[ -z "$CONFIG" ]]; then
   CONFIG="$(find_config || true)"
+fi
+
+if [[ -z "$CONFIG" || ! -f "$CONFIG" ]]; then
+  install_cli_proxy_api_files || true
 fi
 
 if [[ -z "$CONFIG" || ! -f "$CONFIG" ]]; then
@@ -89,6 +168,17 @@ detect_public_ip() {
 }
 
 restart_service() {
+  if [[ -z "$COMPOSE_FILE" && -f "$(dirname "$CONFIG")/docker-compose.yml" ]]; then
+    COMPOSE_FILE="$(dirname "$CONFIG")/docker-compose.yml"
+  fi
+
+  if [[ -n "$COMPOSE_FILE" && -f "$COMPOSE_FILE" ]]; then
+    if install_docker_if_needed; then
+      compose_up
+      return 0
+    fi
+  fi
+
   if systemctl restart "$SERVICE" >/dev/null 2>&1; then
     systemctl status "$SERVICE" --no-pager || true
     return 0
