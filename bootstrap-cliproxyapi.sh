@@ -298,8 +298,19 @@ lines = set_mapping_value(lines, "remote-management", "allow-remote", allow_remo
 lines = set_mapping_value(lines, "remote-management", "secret-key", f'"{management_key}"')
 
 text = "\n".join(lines) + "\n"
-if "your-api-key-" in text:
-    raise SystemExit("Template API key still found in config after update.")
+
+api_block = []
+for i, line in enumerate(lines):
+    if line == "api-keys:" and not line.startswith((" ", "\t")):
+        api_block = lines[i + 1 : section_end(lines, i)]
+        break
+
+if any("your-api-key-" in line for line in api_block):
+    raise SystemExit("Template API key still found in active top-level api-keys block after update.")
+
+api_block_text = "\n".join(api_block)
+if not api_keys or any(key not in api_block_text for key in api_keys):
+    raise SystemExit("Generated API keys were not written into the active top-level api-keys block.")
 
 config.write_text(text)
 PY
