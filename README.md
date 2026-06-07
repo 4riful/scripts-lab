@@ -38,6 +38,13 @@ EXPOSE_PUBLIC=yes \
 /root/cliproxyapi/bootstrap-cliproxyapi.sh
 ```
 
+If the script says `CLIProxyAPI config.yaml was not found`, CLIProxyAPI has not created a config at `/root/cliproxyapi/config.yaml` yet, or it is installed somewhere else. Find the real config and rerun with that path:
+
+```bash
+find /root /opt /etc -name config.yaml 2>/dev/null
+/root/cliproxyapi/bootstrap-cliproxyapi.sh /path/to/config.yaml
+```
+
 After it runs, use the printed values in OpenCode or any OpenAI-compatible client:
 
 - **Base URL:** `http://YOUR_VPS_IP:8317`

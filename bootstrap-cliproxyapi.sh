@@ -1,19 +1,63 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-CONFIG="${CONFIG:-/root/cliproxyapi/config.yaml}"
+CONFIG="${1:-${CONFIG:-}}"
 SERVICE="${SERVICE:-cliproxyapi}"
 PORT="${PORT:-8317}"
 API_KEY_COUNT="${API_KEY_COUNT:-3}"
 EXPOSE_PUBLIC="${EXPOSE_PUBLIC:-yes}"
+
+find_config() {
+  local candidate=""
+  local candidates=(
+    "/root/cliproxyapi/config.yaml"
+    "/root/CLIProxyAPI/config.yaml"
+    "/root/CLI-Proxy-API/config.yaml"
+    "/root/cli-proxy-api/config.yaml"
+    "/opt/cliproxyapi/config.yaml"
+    "/etc/cliproxyapi/config.yaml"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -f "$candidate" ]]; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  candidate="$(find /root /opt /etc -maxdepth 4 -type f -name config.yaml 2>/dev/null | while read -r path; do
+    if grep -Eq '^(api-keys|remote-management|host):' "$path" 2>/dev/null; then
+      echo "$path"
+      break
+    fi
+  done)"
+
+  if [[ -n "$candidate" ]]; then
+    echo "$candidate"
+    return 0
+  fi
+
+  return 1
+}
 
 if [[ "${EUID}" -ne 0 ]]; then
   echo "Run this as root."
   exit 1
 fi
 
-if [[ ! -f "$CONFIG" ]]; then
-  echo "Config not found: $CONFIG"
+if [[ -z "$CONFIG" ]]; then
+  CONFIG="$(find_config || true)"
+fi
+
+if [[ -z "$CONFIG" || ! -f "$CONFIG" ]]; then
+  echo "CLIProxyAPI config.yaml was not found."
+  echo
+  echo "Install/start CLIProxyAPI first so it creates a config.yaml, or rerun with the real config path:"
+  echo "  CONFIG=/path/to/config.yaml $0"
+  echo "  $0 /path/to/config.yaml"
+  echo
+  echo "To search manually:"
+  echo "  find /root /opt /etc -name config.yaml 2>/dev/null"
   exit 1
 fi
 
